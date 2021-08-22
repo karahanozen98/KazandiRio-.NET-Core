@@ -23,7 +23,6 @@ namespace KazandiRio.Application.UserModule.Commands
         {
             var user = await _db.User.FirstOrDefaultAsync(u => u.Id == request.User.Id);
             if (user == null) throw new Exception("Kullanııcı bulunamadı");
-            if(request.User.Role != Role.Admin && request.User.Role != Role.Admin) throw new Exception("Hatalı rol bilgisi");
             if(request.User.Balance < 0 || request.User.Rewards <0) throw new Exception("Bakiye bilgisi sıfırdan küçük olamaz");
 
             user.Role = request.User.Role;

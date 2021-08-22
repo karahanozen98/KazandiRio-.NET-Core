@@ -26,10 +26,22 @@ namespace KazandiRio.Application.UserModule.Queries
 
         public async Task<UserDto> Handle(GetUserByTokenQuery request, CancellationToken cancellationToken)
         {
-            //RefreshToken refreshToken = await authService.GetRefreshTokenAsync(tokenString);
-            RefreshToken refreshToken = await _mediatr.Send(new GetRefreshTokenQuery { TokenString = request.TokenString });
+            var refreshToken = await _db.RefreshToken.FirstOrDefaultAsync(x => x.Token == request.TokenString);
 
+            // if token doesn't exist
             if (refreshToken == null)
+                return null;
+
+            // Token is valid 
+            if (!refreshToken.IsExpired && refreshToken.IsActive)
+            {
+                // Update Expire Date
+                refreshToken.Expires = DateTime.UtcNow.AddDays(30);
+                _db.RefreshToken.Update(refreshToken);
+                await _db.SaveChangesAsync();
+            }
+            // Token is invalid!
+            else
                 return null;
 
             var user = await _db.User.FirstOrDefaultAsync(user => user.TokenId == refreshToken.Id);
