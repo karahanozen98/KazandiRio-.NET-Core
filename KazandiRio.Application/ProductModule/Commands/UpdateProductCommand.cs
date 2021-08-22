@@ -6,7 +6,7 @@ using System.Text;
 
 namespace KazandiRio.Application.ProductModule.Commands
 {
-    class UpdateProductCommand : IRequest<Boolean>
+    public class UpdateProductCommand : IRequest<Boolean>
     {
         public Product Product { get; set; }
     }

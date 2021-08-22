@@ -30,6 +30,7 @@ namespace KazandiRio.Api.Controllers
 
         // GET: All Users
         [HttpGet]
+        [Authorize(Roles = Role.Admin)]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _mediatr.Send(new GetAllUsersQuery());
@@ -74,6 +75,22 @@ namespace KazandiRio.Api.Controllers
             User user = new User { Username = u.Username, Password = u.Password, Role = Role.Consumer, Balance = 0, Rewards = 0 };
              await _mediatr.Send(new CreateUserCommand { User = user });
              return Json("Ok");
+        }
+
+        [HttpPut]
+        [Authorize(Roles = Role.Admin)]
+        public async Task<IActionResult> Update(UserDto u)
+        {
+            await _mediatr.Send(new UpdateUserCommand { User = u });
+            return Json("Ok");
+        }
+
+        [HttpPut("deposit")]
+        [Authorize(Roles = Role.Consumer + "," + Role.Admin)]
+        public async Task<IActionResult> Deposit(DepositDto deposit)
+        {
+            await _mediatr.Send(new UpdateBalanceCommand { UserId=deposit.UserId, Amount = deposit.Amount });
+            return Json("Ok");
         }
 
         private string ipAddress()

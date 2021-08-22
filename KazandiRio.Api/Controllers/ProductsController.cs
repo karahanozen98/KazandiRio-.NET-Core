@@ -59,5 +59,25 @@ namespace KazandiRio.Api.Controllers
             else
                 return BadRequest();
         }
+
+        [HttpPut]
+        [Authorize(Roles = Role.Admin)]
+        public async Task<ActionResult> Update(Product product)
+        {
+            Boolean success = await _mediatr.Send(new UpdateProductCommand { Product = product });
+
+            if (success)
+                return Json("Ok");
+            else
+                return BadRequest();
+        }
+
+        [HttpDelete]
+        [Authorize(Roles = Role.Admin)]
+        public async Task<ActionResult> Delete(ProductIdDto product)
+        {
+           await _mediatr.Send(new DeleteProductCommand { ProductId = product.productId });
+            return Json("Ok");
+        }
     }
 }

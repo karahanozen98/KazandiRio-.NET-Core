@@ -20,12 +20,16 @@ namespace KazandiRio.Application.ProductModule.Commands
 
         public async Task<bool> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
-            var isProductExist = await _db.Product.FirstOrDefaultAsync(product => product.Id == request.Product.Id);
+            var product = await _db.Product.FirstOrDefaultAsync(product => product.Id == request.Product.Id);
 
-            if (isProductExist == null)
-                throw new Exception("Product not found");
+            if (product == null)
+                throw new Exception("Urun bulunamadi");
 
-            _db.Product.Update(request.Product);
+            product.Name = request.Product.Name;
+            product.Price = request.Product.Price;
+            product.CategoryId = request.Product.CategoryId;
+            product.ImageUrl = request.Product.ImageUrl;
+
             await _db.SaveChangesAsync();
             return true;
         }
