@@ -11,17 +11,24 @@ namespace KazandiRio.Application.Modules.UserModule.Queries.GetAllUsers
 {
     class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserDto>>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GetAllUsersQueryHandler(ApplicationDBContext db)
         {
-            _db = db;
+            dbContext = db;
         }
 
         public async Task<IEnumerable<UserDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            var users = await _db.User.ToListAsync();
-            return users.Select(x => new UserDto { Id = x.Id, Username = x.Username, Role = x.Role, Balance = x.Balance, Rewards = x.Rewards });
+            var users = await dbContext.User.ToListAsync();
+            return users.Select(x => new UserDto
+            {
+                Id = x.Id,
+                Username = x.Username,
+                Role = x.Role,
+                Balance = x.Balance,
+                Rewards = x.Rewards
+            });
         }
     }
 }

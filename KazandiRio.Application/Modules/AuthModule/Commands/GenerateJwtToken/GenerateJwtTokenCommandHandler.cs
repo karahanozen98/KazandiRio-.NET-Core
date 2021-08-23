@@ -16,12 +16,12 @@ namespace KazandiRio.Application.Modules.AuthModule.Commands.GenerateJwtToken
     class GenerateJwtTokenCommandHandler : IRequestHandler<GenerateJwtTokenCommand, RefreshToken>
     {
         private readonly AppSettings _appSettings;
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GenerateJwtTokenCommandHandler(IOptions<AppSettings> appSettings, ApplicationDBContext context)
         {
             _appSettings = appSettings.Value;
-            _db = context;
+            dbContext = context;
         }
 
         public async Task<RefreshToken> Handle(GenerateJwtTokenCommand request, CancellationToken cancellationToken)
@@ -52,8 +52,8 @@ namespace KazandiRio.Application.Modules.AuthModule.Commands.GenerateJwtToken
                 Expires = expiresAt,
                 Token = tokenHandler.WriteToken(token)
             };
-            _db.RefreshToken.Add(refreshToken);
-            await _db.SaveChangesAsync();
+            dbContext.RefreshToken.Add(refreshToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             return refreshToken;
         }

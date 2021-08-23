@@ -22,7 +22,6 @@ namespace KazandiRio.Api.Controllers
             _mediatr = mediatr;
         }
 
-        // GET: Product
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -30,7 +29,6 @@ namespace KazandiRio.Api.Controllers
             return Ok(products);
         }
 
-        // POST: CategoryController/Details/5
         [HttpPost]
         [Authorize(Policy = "AdminPolicy")]
         public async Task<ActionResult> Create(CreateProductDto product)

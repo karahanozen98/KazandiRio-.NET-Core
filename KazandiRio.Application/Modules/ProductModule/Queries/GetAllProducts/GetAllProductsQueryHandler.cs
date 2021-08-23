@@ -12,23 +12,25 @@ namespace KazandiRio.Application.Modules.ProductModule.Queries.GetAllProducts
 {
     class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, IEnumerable<ProductDto>>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GetAllProductsQueryHandler(ApplicationDBContext context)
         {
-            _db = context;
+            dbContext = context;
         }
 
         public async Task<IEnumerable<ProductDto>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
         {
-            List<Product> products = await _db.Product.ToListAsync();
-            List<ProductDto> productsWithCategoryInfo = new List<ProductDto>();
+            var products = await dbContext.Product.ToListAsync();
+            var productsWithCategoryInfo = new List<ProductDto>();
 
             products.ToList().ForEach(async product =>
             {
                 Category c = null;
                 if (product.CategoryId != null || product.CategoryId != 0)
-                    c = await _db.Category.FirstOrDefaultAsync(x => x.Id == product.CategoryId);
+                {
+                    c = await dbContext.Category.FirstOrDefaultAsync(x => x.Id == product.CategoryId);
+                }
 
                 productsWithCategoryInfo.Add(new ProductDto
                 {

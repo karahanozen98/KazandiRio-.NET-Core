@@ -3,30 +3,29 @@ using KazandiRio.Domain.Entities;
 using KazandiRio.Repository.DAL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KazandiRio.Application.Modules.ProductModule.Queries.GetProductById
 {
-    class GetProductByIdQueryHandler: IRequestHandler<GetProductByIdQuery, ProductDto>
+    class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ProductDto>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GetProductByIdQueryHandler(ApplicationDBContext context)
         {
-            _db = context;
+            dbContext = context;
         }
 
         public async Task<ProductDto> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
         {
-            Product product = await _db.Product.FirstOrDefaultAsync(m => m.Id == request.Id);
+            var product = await dbContext.Product.FirstOrDefaultAsync(m => m.Id == request.Id);
             Category category = null;
 
             if (product.CategoryId != null || product.CategoryId != 0)
-                category = await _db.Category.FirstOrDefaultAsync(x => x.Id == product.CategoryId);
+            {
+                category = await dbContext.Category.FirstOrDefaultAsync(x => x.Id == product.CategoryId);
+            }
 
             return new ProductDto
             {

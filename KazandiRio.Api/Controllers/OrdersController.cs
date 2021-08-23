@@ -33,7 +33,6 @@ namespace KazandiRio.Api.Controllers
         {
             await _mediatr.Send(new CreateOrderByBalanceCommand { Order = order });
             return Ok("Ok");
-
         }
 
         [HttpPost("rewards")]
@@ -41,7 +40,6 @@ namespace KazandiRio.Api.Controllers
         {
             await _mediatr.Send(new CreateOrderByRewardsCommand { Order = order });
             return Ok("Ok");
-
         }
     }
 }

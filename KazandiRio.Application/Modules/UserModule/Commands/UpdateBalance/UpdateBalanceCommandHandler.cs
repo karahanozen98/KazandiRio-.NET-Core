@@ -1,4 +1,5 @@
-﻿using KazandiRio.Repository.DAL;
+﻿using KazandiRio.Core.Exceptions;
+using KazandiRio.Repository.DAL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,20 +10,28 @@ namespace KazandiRio.Application.Modules.UserModule.Commands.UpdateBalance
 {
     class UpdateBalanceCommandHandler : IRequestHandler<UpdateBalanceCommand, Boolean>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public UpdateBalanceCommandHandler(ApplicationDBContext db)
         {
-            _db = db;
+            dbContext = db;
         }
 
         public async Task<bool> Handle(UpdateBalanceCommand request, CancellationToken cancellationToken)
         {
-            var user = await _db.User.FirstOrDefaultAsync(u => u.Id == request.UserId);
-            if (user == null) throw new Exception("Kullanıcı bulunamadı");
-            if (request.Amount <= 0) throw new Exception("Miktar sıfırdan büyük olmalı");
+            var user = await dbContext.User.FirstOrDefaultAsync(u => u.Id == request.UserId);
+
+            if (user == null)
+            {
+                throw new NotFoundException("Kullanıcı bulunamadı");
+            }
+            if (request.Amount <= 0)
+            {
+                throw new Exception("Miktar sıfırdan büyük olmalı");
+            }
+
             user.Balance += request.Amount;
-            await _db.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
             return true;
         }
     }

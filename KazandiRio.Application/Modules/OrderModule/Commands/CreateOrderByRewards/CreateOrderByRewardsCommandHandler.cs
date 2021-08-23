@@ -1,4 +1,5 @@
-﻿using KazandiRio.Domain.Entities;
+﻿using KazandiRio.Core.Exceptions;
+using KazandiRio.Domain.Entities;
 using KazandiRio.Repository.DAL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -10,54 +11,62 @@ namespace KazandiRio.Application.Modules.OrderModule.Commands.CreateOrderByRewar
 {
     class CreateOrderByRewardsCommandHandler : IRequestHandler<CreateOrderByRewardsCommand, Boolean>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
         public CreateOrderByRewardsCommandHandler(ApplicationDBContext context)
         {
-            _db = context;
+            dbContext = context;
         }
 
         public async Task<bool> Handle(CreateOrderByRewardsCommand request, CancellationToken cancellationToken)
         {
-            User user = await _db.User.FirstOrDefaultAsync(user => user.Id == request.Order.UserId);
+            var user = await dbContext.User.FirstOrDefaultAsync(user => user.Id == request.Order.UserId);
             float totalPrice = 0;
             float totalRewards = 0;
 
             if (user == null)
-                throw new Exception("Kullanıcı bulunamdı");
+            {
+                throw new NotFoundException("Kullanıcı bulunamdı");
+            }
 
             for (int i = 0; i < request.Order.ProductList.Length; i++)
             {
-                Product product = await _db.Product.FirstOrDefaultAsync(product => product.Id == request.Order.ProductList[i]);
+                Product product = await dbContext.Product.FirstOrDefaultAsync(product => product.Id == request.Order.ProductList[i]);
                 Category category = null;
 
                 if (product == null)
-                    throw new Exception("Ürün bulunamadı");
-
+                {
+                    throw new NotFoundException("Ürün bulunamadı");
+                }
                 if (product.CategoryId > 0)
-                    category = await _db.Category.FirstOrDefaultAsync(category => category.Id == product.CategoryId);
+                {
+                    category = await dbContext.Category.FirstOrDefaultAsync(category => category.Id == product.CategoryId);
+                }
 
                 totalPrice += product.Price;
-                if (category != null) totalRewards += category.RewardAmount;
+
+                if (category != null)
+                {
+                    totalRewards += category.RewardAmount;
+                }
 
             }
-
 
             if (user.Rewards >= totalPrice)
             {
                 for (int i = 0; i < request.Order.ProductList.Length; i++)
                 {
-                    _db.Order.Add(new Order { UserId = user.Id, ProductId = request.Order.ProductList[i] });
+                    dbContext.Order.Add(new Order { UserId = user.Id, ProductId = request.Order.ProductList[i] });
                 }
                 user.Rewards -= totalPrice;
                 user.Rewards += totalRewards;
-
-                _db.User.Update(user);
-                await _db.SaveChangesAsync();
+                dbContext.User.Update(user);
+                await dbContext.SaveChangesAsync(cancellationToken);
                 return true;
             }
-
             else
+            {
                 throw new Exception("Yetersiz bakiye");
+            }
         }
     }
 }

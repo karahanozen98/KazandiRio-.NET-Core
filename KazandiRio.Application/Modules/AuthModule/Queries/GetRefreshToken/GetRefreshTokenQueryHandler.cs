@@ -10,33 +10,32 @@ namespace KazandiRio.Application.Modules.AuthModule.Queries.GetRefreshToken
 {
     class GetRefreshTokenQueryHandler : IRequestHandler<GetRefreshTokenQuery, RefreshToken>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GetRefreshTokenQueryHandler(ApplicationDBContext context)
         {
-            _db = context;
+            dbContext = context;
         }
         public async Task<RefreshToken> Handle(GetRefreshTokenQuery request, CancellationToken cancellationToken)
         {
-            var refreshToken = await _db.RefreshToken.FirstOrDefaultAsync(x => x.Token == request.TokenString);
+            var refreshToken = await dbContext.RefreshToken.FirstOrDefaultAsync(x => x.Token == request.TokenString);
 
-            // if token doesn't exist
             if (refreshToken == null)
+            {
                 return null;
-
-            // Token is valid 
+            }
             if (!refreshToken.IsExpired && refreshToken.IsActive)
             {
-                // Update Expire Date
                 refreshToken.Expires = DateTime.UtcNow.AddDays(30);
-                _db.RefreshToken.Update(refreshToken);
-                await _db.SaveChangesAsync();
-                // return Token
+                dbContext.RefreshToken.Update(refreshToken);
+                await dbContext.SaveChangesAsync();
+
                 return refreshToken;
             }
-            // Token is invalid!
             else
+            {
                 return null;
+            }
         }
     }
 }

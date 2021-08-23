@@ -1,4 +1,5 @@
 ﻿using KazandiRio.Application.DTO;
+using KazandiRio.Core.Exceptions;
 using KazandiRio.Domain.Entities;
 using KazandiRio.Repository.DAL;
 using MediatR;
@@ -13,32 +14,36 @@ namespace KazandiRio.Application.Modules.OrderModule.Queries.GetUsersOrders
     class GetUsersOrdersQueryHandler : IRequestHandler<GetUsersOrdersQuery, IEnumerable<ProductDto>>
     {
         private readonly IMediator _mediatr;
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
         public GetUsersOrdersQueryHandler(IMediator mediatr, ApplicationDBContext context)
         {
             _mediatr = mediatr;
-            _db = context;
+            dbContext = context;
         }
         public async Task<IEnumerable<ProductDto>> Handle(GetUsersOrdersQuery request, CancellationToken cancellationToken)
         {
-            List<ProductDto> products = new List<ProductDto>();
-
-            // Get user by id
-            User user = await _db.User.FirstOrDefaultAsync(user => user.Id == request.UserId);
+            var products = new List<ProductDto>();
+            var user = await dbContext.User.FirstOrDefaultAsync(user => user.Id == request.UserId);
 
             if (user == null)
-                return null;
+            {
+                throw new NotFoundException("Kullanıcı bulunmadı");
+            }
 
-            var orders = _db.Order.Where(order => order.UserId == user.Id);
+            var orders = dbContext.Order.Where(order => order.UserId == user.Id);
 
             orders.ToList().ForEach(async order =>
             {
-                Product p = await _db.Product.FirstOrDefaultAsync(p => p.Id == order.ProductId);
+                var p = await dbContext.Product.FirstOrDefaultAsync(p => p.Id == order.ProductId);
                 Category c = null;
 
                 if (p != null)
+                {
                     if (p.CategoryId != null || p.CategoryId != 0)
-                        c = await _db.Category.FirstOrDefaultAsync(category => category.Id == p.CategoryId);
+                    {
+                        c = await dbContext.Category.FirstOrDefaultAsync(category => category.Id == p.CategoryId);
+                    }
+                }
 
                 products.Add(new ProductDto
                 {

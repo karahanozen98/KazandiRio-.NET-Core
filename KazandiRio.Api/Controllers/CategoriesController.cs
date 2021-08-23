@@ -21,25 +21,20 @@ namespace KazandiRio.Api.Controllers
             _mediatr = mediatr;
         }
 
-        // GET: Categories
         [HttpGet]
         public async Task<IActionResult> GetAllCategories()
         {
-            //var categories = await _categoryService.GetCategoriesAsync();
             var categories = await _mediatr.Send(new GetAllCategoriesQuery());
             return Ok(categories);
         }
 
-        // GET: CategoryController/ get by id
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
-            //var category = await _categoryService.GetCateogryByIdAsync(id);
             var category = await _mediatr.Send(new GetCategoryByIdQuery { Id = id });
             return Ok(category);
         }
 
-        // POST: CategoryController/Details/5
         [HttpPost]
         [Authorize(Policy = "AdminPolicy")]
         public async Task<ActionResult> Create([FromBody] Category category)

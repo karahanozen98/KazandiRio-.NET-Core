@@ -10,15 +10,15 @@ namespace KazandiRio.Application.Modules.CategoryModule.Queries.GetAllCategories
 {
     class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, IEnumerable<CategoryDto>>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GetAllCategoriesQueryHandler(ApplicationDBContext db)
         {
-            _db = db;
+            dbContext = db;
         }
         public async Task<IEnumerable<CategoryDto>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
         {
-            var categories = await _db.Category.ToListAsync();
+            var categories = await dbContext.Category.ToListAsync();
             return categories.Select(x => new CategoryDto { Id = x.Id, Name = x.Name, RewardAmount = x.RewardAmount });
         }
     }

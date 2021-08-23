@@ -8,16 +8,16 @@ namespace KazandiRio.Application.Modules.CategoryModule.Commands.CreateCategory
 {
     class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Boolean>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public CreateCategoryCommandHandler(ApplicationDBContext db)
         {
-            _db = db;
+            dbContext = db;
         }
         public async Task<bool> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
         {
-            _db.Category.Add(request.Category);
-            await _db.SaveChangesAsync();
+            dbContext.Category.Add(request.Category);
+            await dbContext.SaveChangesAsync(cancellationToken);
             return true;
         }
     }

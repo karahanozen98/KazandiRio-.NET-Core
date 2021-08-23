@@ -1,4 +1,5 @@
 ﻿using KazandiRio.Application.DTO;
+using KazandiRio.Core.Exceptions;
 using KazandiRio.Repository.DAL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,46 +12,48 @@ namespace KazandiRio.Application.Modules.UserModule.Queries.GetUserByToken
     class GetUserByTokenQueryHandler : IRequestHandler<GetUserByTokenQuery, UserDto>
     {
 
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GetUserByTokenQueryHandler(ApplicationDBContext db)
         {
-            _db = db;
+            dbContext = db;
         }
 
         public async Task<UserDto> Handle(GetUserByTokenQuery request, CancellationToken cancellationToken)
         {
-            var refreshToken = await _db.RefreshToken.FirstOrDefaultAsync(x => x.Token == request.TokenString);
+            var refreshToken = await dbContext.RefreshToken.FirstOrDefaultAsync(x => x.Token == request.TokenString);
 
-            // if token doesn't exist
             if (refreshToken == null)
-                return null;
-
-            // Token is valid 
+            {
+                throw new NotFoundException("Token bulunamadı");
+            }
             if (!refreshToken.IsExpired && refreshToken.IsActive)
             {
-                // Update Expire Date
                 refreshToken.Expires = DateTime.UtcNow.AddDays(30);
-                _db.RefreshToken.Update(refreshToken);
-                await _db.SaveChangesAsync();
+                dbContext.RefreshToken.Update(refreshToken);
+                await dbContext.SaveChangesAsync();
             }
-            // Token is invalid!
             else
-                return null;
+            {
+                throw new NotFoundException("Token geçersiz");
+            }
 
-            var user = await _db.User.FirstOrDefaultAsync(user => user.TokenId == refreshToken.Id);
-            if (user != null)
-                return new UserDto
-                {
-                    Id = user.Id,
-                    Username = user.Username,
-                    Role = user.Role,
-                    Balance = user.Balance,
-                    Rewards = user.Rewards,
-                    Token = refreshToken.Token
-                };
-            else
-                return null;
+            var user = await dbContext.User.FirstOrDefaultAsync(user => user.TokenId == refreshToken.Id);
+
+            if (user == null)
+            {
+                throw new NotFoundException("Kullanıcı bulunamadı");
+            }
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Role = user.Role,
+                Balance = user.Balance,
+                Rewards = user.Rewards,
+                Token = refreshToken.Token
+            };
         }
     }
 }

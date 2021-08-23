@@ -1,4 +1,5 @@
-﻿using KazandiRio.Domain.Entities;
+﻿using KazandiRio.Core.Exceptions;
+using KazandiRio.Domain.Entities;
 using KazandiRio.Repository.DAL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -10,31 +11,31 @@ namespace KazandiRio.Application.Modules.ProductModule.Commands.CreateProduct
 {
     class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Boolean>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public CreateProductCommandHandler(ApplicationDBContext context)
         {
-            _db = context;
+            dbContext = context;
         }
 
         public async Task<bool> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
-            Category isCategoryExist = await _db.Category.FirstOrDefaultAsync(c => c.Id == request.Product.CategoryId);
+            var category = await dbContext.Category.FirstOrDefaultAsync(c => c.Id == request.Product.CategoryId);
 
-            // Unknown category type
-            if (request.Product.CategoryId != null && isCategoryExist == null)
-                throw new Exception("Kategori bulunamadı");
-
+            if (request.Product.CategoryId != null && category == null)
+            {
+                throw new NotFoundException("Kategori bulunamadı");
+            }
             else
             {
-                _db.Product.Add(new Product
+                dbContext.Product.Add(new Product
                 {
                     Name = request.Product.Name,
                     Price = request.Product.Price,
                     CategoryId = request.Product.CategoryId,
                     ImageUrl = request.Product.ImageUrl
                 });
-                await _db.SaveChangesAsync();
+                await dbContext.SaveChangesAsync(cancellationToken);
                 return true;
             }
         }

@@ -24,7 +24,6 @@ namespace KazandiRio.Api.Controllers
             _mediatr = mediatr;
         }
 
-        // GET: All Users
         [HttpGet]
         [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> GetAllUsers()
@@ -33,7 +32,6 @@ namespace KazandiRio.Api.Controllers
             return Ok(users);
         }
 
-        // GET: User by username and password
         [HttpPost("login")]
         public async Task<IActionResult> MakeLoginRequestWithUsernameAndPasswordAsync(LoginDto loginInfo)
         {
@@ -42,7 +40,6 @@ namespace KazandiRio.Api.Controllers
             return Ok(user);
         }
 
-        // GET: User by token
         [HttpPost("authorize")]
         public async Task<IActionResult> MakeLoginRequestWithTokenAsync(TokenDto token)
         {

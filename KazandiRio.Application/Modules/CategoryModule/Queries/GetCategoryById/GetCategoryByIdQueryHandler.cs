@@ -1,4 +1,5 @@
 ﻿using KazandiRio.Application.DTO;
+using KazandiRio.Core.Exceptions;
 using KazandiRio.Repository.DAL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -9,19 +10,26 @@ namespace KazandiRio.Application.Modules.CategoryModule.Queries.GetCategoryById
 {
     class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, CategoryDto>
     {
-        private readonly ApplicationDBContext _db;
+        private readonly ApplicationDBContext dbContext;
 
         public GetCategoryByIdQueryHandler(ApplicationDBContext db)
         {
-            _db = db;
+            dbContext = db;
         }
         public async Task<CategoryDto> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
         {
-            var category = await _db.Category.FirstOrDefaultAsync(m => m.Id == request.Id);
+            var category = await dbContext.Category.FirstOrDefaultAsync(m => m.Id == request.Id);
             if (category == null)
-                return null;
+            {
+                throw new NotFoundException("Kategori bulunamadı");
+            }
 
-            return new CategoryDto { Id = category.Id, Name = category.Name, RewardAmount = category.RewardAmount };
+            return new CategoryDto
+            {
+                Id = category.Id,
+                Name = category.Name,
+                RewardAmount = category.RewardAmount
+            };
         }
     }
 }
