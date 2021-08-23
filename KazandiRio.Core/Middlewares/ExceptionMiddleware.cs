@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using KazandiRio.Core.Exceptions;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace KazandiRio.Core.Middlewares
@@ -22,13 +21,26 @@ namespace KazandiRio.Core.Middlewares
             {
                 await _next(httpContext);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Console.WriteLine(e);
-                httpContext.Response.StatusCode = 400;
-                var json = JsonConvert.SerializeObject(e.Message);
-                await httpContext.Response.WriteAsync(json);
+                switch (e)
+                {
+                    case NotFoundException ex:
+                        await WriteException(httpContext, ex.Message, 404);
+                        break;
+                    default:
+                        await WriteException(httpContext, e.Message, 400);
+                        break;
+
+                }
+
             }
+        }
+        private async Task WriteException(HttpContext httpContext, string message, int statusCode)
+        {
+            httpContext.Response.StatusCode = 400;
+            var json = JsonConvert.SerializeObject(message);
+            await httpContext.Response.WriteAsync(json);
         }
     }
 }

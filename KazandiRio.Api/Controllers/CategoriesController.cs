@@ -1,27 +1,22 @@
-﻿using KazandiRio.Application.CategoryModule.Commands;
-using KazandiRio.Application.CategoryModule.Queries;
-using KazandiRio.Application.DTO;
-using KazandiRio.Application.Services;
+﻿using KazandiRio.Application.Modules.CategoryModule.Commands.CreateCategory;
+using KazandiRio.Application.Modules.CategoryModule.Queries.GetAllCategories;
+using KazandiRio.Application.Modules.CategoryModule.Queries.GetCategoryById;
 using KazandiRio.Domain.Entities;
-using KazandiRio.Repository.DAL;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace KazandiRio.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = Role.Admin + "," + Role.Consumer)]
+    [Authorize(Policy = "UserPolicy")]
     public class CategoriesController : Controller
     {
         private readonly IMediator _mediatr;
 
-        public CategoriesController(IMediator mediatr, ICategoryService service)
+        public CategoriesController(IMediator mediatr)
         {
             _mediatr = mediatr;
         }
@@ -32,7 +27,7 @@ namespace KazandiRio.Api.Controllers
         {
             //var categories = await _categoryService.GetCategoriesAsync();
             var categories = await _mediatr.Send(new GetAllCategoriesQuery());
-            return Json(categories);
+            return Ok(categories);
         }
 
         // GET: CategoryController/ get by id
@@ -41,19 +36,16 @@ namespace KazandiRio.Api.Controllers
         {
             //var category = await _categoryService.GetCateogryByIdAsync(id);
             var category = await _mediatr.Send(new GetCategoryByIdQuery { Id = id });
-            return Json(category);
+            return Ok(category);
         }
 
         // POST: CategoryController/Details/5
         [HttpPost]
-        [Authorize(Roles = Role.Admin)]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<ActionResult> Create([FromBody] Category category)
         {
-            Boolean success = await _mediatr.Send(new CreateCategoryCommand { Category = category });
-            if (success)
-                return Json("Ok");
-            else
-                return BadRequest();
+            await _mediatr.Send(new CreateCategoryCommand { Category = category });
+            return Ok("Ok");
         }
     }
 }

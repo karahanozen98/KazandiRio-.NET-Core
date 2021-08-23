@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\KazandiRio.Core\KazandiRio.Core.csproj" />
     <ProjectReference Include="..\KazandiRio.Domain\KazandiRio.Domain.csproj" />
     <ProjectReference Include="..\KazandiRio.Repository\KazandiRio.Repository.csproj" />
   </ItemGroup>

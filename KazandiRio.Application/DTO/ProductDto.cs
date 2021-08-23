@@ -1,7 +1,4 @@
 ﻿using KazandiRio.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace KazandiRio.Application.DTO
 {

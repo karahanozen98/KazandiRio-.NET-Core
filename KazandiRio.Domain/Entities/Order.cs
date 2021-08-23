@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace KazandiRio.Domain.Entities
 {
@@ -23,6 +21,6 @@ namespace KazandiRio.Domain.Entities
         public Product Product { get; set; }
         public Boolean Delivered { get; set; }
 
-       
+
     }
 }

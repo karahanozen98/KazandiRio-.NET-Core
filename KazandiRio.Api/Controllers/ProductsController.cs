@@ -1,22 +1,18 @@
 ﻿using KazandiRio.Application.DTO;
-using KazandiRio.Application.ProductModule.Commands;
-using KazandiRio.Application.ProductModule.Queries;
-using KazandiRio.Application.Services;
-using KazandiRio.Domain.Entities;
-using KazandiRio.Repository.DAL;
+using KazandiRio.Application.Modules.ProductModule.Commands.CreateProduct;
+using KazandiRio.Application.Modules.ProductModule.Commands.DeleteProduct;
+using KazandiRio.Application.Modules.ProductModule.Commands.UpdateProduct;
+using KazandiRio.Application.Modules.ProductModule.Queries.GetAllProducts;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace KazandiRio.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = Role.Admin + "," + Role.Consumer)]
+    [Authorize(Policy = "UserPolicy")]
     public class ProductsController : Controller
     {
         private readonly IMediator _mediatr;
@@ -31,53 +27,32 @@ namespace KazandiRio.Api.Controllers
         public async Task<IActionResult> Get()
         {
             var products = await _mediatr.Send(new GetAllProductsQuery());
-            return Json(products);
-        }
-
-        // GET: CategoryController/ get by id
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Login(int id)
-        {
-            var product = await _mediatr.Send(new GetProductByIdQuery { Id = id });
-            if (product != null)
-                return Json(product);
-
-            else
-                return NotFound();
-
+            return Ok(products);
         }
 
         // POST: CategoryController/Details/5
         [HttpPost]
-        [Authorize(Roles = Role.Admin)]
-        public async Task<ActionResult> Create(Product product)
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<ActionResult> Create(CreateProductDto product)
         {
-            Boolean success = await _mediatr.Send(new CreateProductCommand { Product = product });
-
-            if (success)
-                return Json("Ok");
-            else
-                return BadRequest();
+            await _mediatr.Send(new CreateProductCommand { Product = product });
+            return Ok("Ok");
         }
 
         [HttpPut]
-        [Authorize(Roles = Role.Admin)]
-        public async Task<ActionResult> Update(Product product)
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<ActionResult> Update(UpdateProductDto product)
         {
-            Boolean success = await _mediatr.Send(new UpdateProductCommand { Product = product });
-
-            if (success)
-                return Json("Ok");
-            else
-                return BadRequest();
+            await _mediatr.Send(new UpdateProductCommand { Product = product });
+            return Ok("Ok");
         }
 
         [HttpDelete]
-        [Authorize(Roles = Role.Admin)]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<ActionResult> Delete(ProductIdDto product)
         {
-           await _mediatr.Send(new DeleteProductCommand { ProductId = product.productId });
-            return Json("Ok");
+            await _mediatr.Send(new DeleteProductCommand { ProductId = product.productId });
+            return Ok("Ok");
         }
     }
 }
